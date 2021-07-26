@@ -1,0 +1,21 @@
+
+USE AdventureWorksDW2017
+GO
+SET NOCOUNT ON
+
+DROP TABLE #TempMonthlyAverages
+
+--Rolling Average First Pass
+Select d.MonthNumberOfYear, d.EnglishMonthName, AVG(f.Amount) as 'Average'
+Into #TempMonthlyAverages
+From FactFinance as f
+inner join DimDate as d
+on f.DateKey = d.DateKey
+Group By d.EnglishMonthName, d.MonthNumberOfYear
+Order By d.MonthNumberOfYear
+
+--Rolling Average
+Select MonthNumberofYear, EnglishMonthName, Average as 'MonthlyAverage', AVG(Average) 
+OVER (Order By MonthNumberOfYear ROWS Between 2 Preceding and Current Row) as '3MonthRollingAverage'
+From #TempMonthlyAverages
+
